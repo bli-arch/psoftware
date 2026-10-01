@@ -1,0 +1,3 @@
+[build]
+#target-dir = "R:/cargo-target"
+# target-dir = "R:\\cargo-target"

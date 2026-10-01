@@ -1,0 +1,417 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.ts";
+
+@source inline("bg-slate-50 bg-stone-50");
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("/fonts/RedHatDisplay-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+html.psoft-route-transition {
+    view-transition-name: none;
+}
+
+html.psoft-route-transition::view-transition {
+    clip-path: inset(
+        var(--psoft-route-clip-top)
+        var(--psoft-route-clip-right)
+        var(--psoft-route-clip-bottom)
+        var(--psoft-route-clip-left)
+    );
+}
+
+::view-transition-group(psoft-route-content) {
+    animation-duration: var(--psoft-route-duration);
+    overflow: clip;
+}
+
+::view-transition-old(psoft-route-content),
+::view-transition-new(psoft-route-content) {
+    height: 100%;
+    mix-blend-mode: normal;
+    width: 100%;
+}
+
+::view-transition-old(psoft-route-content) {
+    animation: psoft-route-out var(--psoft-route-duration) ease-in-out both;
+}
+
+::view-transition-new(psoft-route-content) {
+    animation: psoft-route-in var(--psoft-route-duration) ease-in-out both;
+}
+
+@keyframes psoft-route-out {
+    to {
+        opacity: var(--psoft-route-faded-opacity);
+        transform: translateX(var(--psoft-route-exit-x));
+    }
+}
+
+@keyframes psoft-route-in {
+    from {
+        opacity: var(--psoft-route-faded-opacity);
+        transform: translateX(var(--psoft-route-enter-x));
+    }
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("/fonts/RedHatDisplay-Medium.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 500 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("/fonts/RedHatDisplay-Bold.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 700 900;
+    font-display: swap;
+}
+
+:root {
+    --light-bg1: #FFFFFF;
+    /* --light-bg2: #F5F6F7; */
+    --light-bg2: color-mix(in srgb, var(--user-color), #FAFAF8 99%);
+    --light-bg3: #E8EBEF;
+
+    --dark-bg1: #000000;
+    --dark-bg2: #0D0D0D;
+    --dark-bg3: #252525;
+    --astaji-color: #13F287;
+    --grey: #ABB0BA;
+    --light-grey: #B6B6B6;
+    
+    --red: #F2133B;
+    --transparent-red: #F2133B29;
+    --green: #11DA74;
+    --transparent-green: #11DA7429;
+    --orange: #F26313;
+    --blue: #2B7FFF;
+
+    --user-color: #F26313;
+    --user-color-darker: color-mix(in srgb, var(--user-color) 100%, black 25%);
+    --user-color-transparent: color-mix(in srgb, var(--user-color) 12%, transparent);
+    --page-icon-user: var(--user-color);
+    --page-icon-user-transparent: var(--user-color-transparent);
+    --page-icon-blue: var(--blue);
+    --page-icon-blue-transparent: color-mix(in srgb, var(--page-icon-blue) 12%, transparent);
+    --page-icon-green: var(--green);
+    --page-icon-green-transparent: color-mix(in srgb, var(--page-icon-green) 12%, transparent);
+    --page-icon-orange: var(--orange);
+    --page-icon-orange-transparent: color-mix(in srgb, var(--page-icon-orange) 12%, transparent);
+    --page-icon-red: var(--red);
+    --page-icon-red-transparent: color-mix(in srgb, var(--page-icon-red) 12%, transparent);
+    --page-icon-purple: #8B5CF6;
+    --page-icon-purple-transparent: color-mix(in srgb, var(--page-icon-purple) 12%, transparent);
+    --page-icon-slate: #64748B;
+    --page-icon-slate-transparent: color-mix(in srgb, var(--page-icon-slate) 12%, transparent);
+    
+    --font: "Red Hat Display", sans-serif;
+
+    --animation-duration-100: 100ms;
+    --animation-duration-150: 150ms;
+    --animation-duration-160: 160ms;
+    --animation-duration: 200ms;
+    --animation-duration-220: 220ms;
+    --animation-duration-250: 250ms;
+    --animation-duration-300: 300ms;
+    --animation-duration-400: 400ms;
+    --animation-duration-750: 750ms;
+    --animation-duration-1000: 1s;
+    --animation-duration-1500: 1500ms;
+    --animation-duration-2000: 2000ms;
+    --animation-delay-75: 75ms;
+    --animation-delay: 200ms;
+    --animation-delay-300: 300ms;
+    --animation-delay-400: 400ms;
+    --default-transition-duration: var(--animation-duration);
+    --transition: color, background-color, border-color, box-shadow, opacity, transform;
+
+    /* Portaled overlays share a layer so DOM order preserves nested menus and dialogs. */
+    --z-overlay: 100;
+    --z-tooltip: 110;
+    --z-toast: 120;
+
+    --animate-caret-blink: caret-blink var(--animation-duration-1000) ease-out infinite;
+
+
+    /* Shadows */
+    --shadow-popover: 0px 7px 12px 3px hsla(240 6% 10% / 0.1);
+}
+
+html[data-theme="dark"] {
+    --light-bg1: #000000;
+    --light-bg2: #0D0D0D;
+    --light-bg3: #252525;
+    --dark-bg1: #FFFFFF;
+    --dark-bg2: color-mix(in srgb, var(--user-color), #FAFAF8 99%);
+    --dark-bg3: #E8EBEF;
+    --grey: #8F98A3;
+}
+
+html.ui-high-contrast {
+    --light-bg3: #C8CDD5;
+    --grey: #667085;
+}
+
+html[data-theme="dark"].ui-high-contrast {
+    --light-bg1: #050505;
+    --light-bg2: #111418;
+    --light-bg3: #3F4752;
+    --dark-bg1: #FFFFFF;
+    --dark-bg2: #F8FAFC;
+    --grey: #D0D5DD;
+}
+
+html[data-text-size="small"] {
+    font-size: 14px;
+}
+
+html[data-text-size="large"] {
+    font-size: 17px;
+}
+
+html[data-density="compact"] .settings-row,
+html[data-density="compact"] .settings-accordion-item {
+    --settings-row-y: 0.625rem;
+}
+
+html[data-density="comfortable"] .settings-row,
+html[data-density="comfortable"] .settings-accordion-item {
+    --settings-row-y: 1rem;
+}
+
+html.ui-no-animations {
+    --animation-duration-100: 0ms;
+    --animation-duration-150: 0ms;
+    --animation-duration-160: 0ms;
+    --animation-duration: 0ms;
+    --animation-duration-220: 0ms;
+    --animation-duration-250: 0ms;
+    --animation-duration-300: 0ms;
+    --animation-duration-400: 0ms;
+    --animation-duration-750: 0ms;
+    --animation-duration-1000: 0ms;
+    --animation-duration-1500: 0ms;
+    --animation-duration-2000: 0ms;
+    --animation-delay-75: 0ms;
+    --animation-delay: 0ms;
+    --animation-delay-300: 0ms;
+    --animation-delay-400: 0ms;
+}
+
+html.ui-no-animations *,
+html.ui-no-animations *::before,
+html.ui-no-animations *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+}
+
+.ui-loader-spin,
+html.ui-no-animations .ui-loader-spin {
+    animation: ui-loader-spin 1s linear infinite !important;
+}
+
+@keyframes ui-loader-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+html.ui-strong-focus *:focus-visible {
+    outline: 2px solid var(--user-color) !important;
+    outline-offset: 2px !important;
+}
+
+html.ui-strong-focus :where(.input-container, .textarea-container) :focus-visible {
+    outline: none !important;
+}
+
+html.ui-strong-focus :where(.input-container, .textarea-container):has(:focus-visible),
+html.ui-strong-focus .select-button:focus-visible {
+    border-color: var(--user-color) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--user-color) 32%, transparent) !important;
+}
+
+html.ui-striped-rows .settings-table tbody > tr:nth-child(even),
+html.ui-striped-rows .table-body > .table-row:nth-child(even),
+html.ui-striped-rows .data-table-row:nth-child(even) {
+    background: var(--light-bg2);
+}
+
+html.ui-striped-rows .settings-table tbody > tr:nth-child(even):hover,
+html.ui-striped-rows .table-body > .table-row:nth-child(even):hover,
+html.ui-striped-rows .data-table-row:nth-child(even):hover {
+    background: var(--light-bg3);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--light-bg3);
+  border-radius: 10px;
+  transition: background-color var(--animation-duration-1000) ease-in-out;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--light-grey);
+    transition: all var(--animation-duration);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@keyframes blink {
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--light-bg1);
+  }
+}
+
+body {
+    all: unset;
+    font-family: var(--font);
+}
+
+.table {
+    display: flex;
+    flex-direction: column;
+    width: -webkit-fill-available;
+    background: var(--light-bg1);
+    border-radius: 20px;
+}
+
+.table-head,
+.table-body {
+    width: 100%;
+}
+
+.table-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* padding: 0 10px; */
+    min-height: 30px;
+}
+
+.table-row:has(.table-content) {
+    min-width: fit-content;
+    height: fit-content;
+    transition: var(--animation-duration) background;
+    cursor: pointer;
+}
+
+.table-row:has(.table-content):hover{
+    background-color: var(--light-bg2);
+}
+
+
+.table-content,
+.cat-title {
+    width: 100%;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+}
+
+.cat-title {
+    padding: 8px 10px;
+    transition: var(--animation-duration) background;
+}
+
+.cat-title:hover {
+    background: var(--light-bg3);
+    color: var(--dark-bg1);
+}
+
+.cat-title:first-child,
+.cat-title:last-child,
+.table-content:first-child,
+.table-content:last-child {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.table-content--selectable {
+    transition: var(--animation-duration) background;
+}
+
+.table-content--selectable:hover {
+    background: var(--light-bg3);
+}
+
+.table-head .table-row {
+    border-bottom: solid 1px var(--light-bg3);
+}
+
+
+.cat-title {
+    position: relative;
+    border-right: solid 1px var(--light-bg3);
+}
+
+.table-row:not(:last-child) {
+    border-bottom: solid 1px var(--light-bg3);
+}
+
+.resizer-container::-webkit-scrollbar {
+    display: none;
+}
+
+.resizer-container {
+    max-height: 100%;
+    height: fit-content;
+    overflow-x: hidden;
+    background: var(--light-bg1);
+    border-top: solid 1px var(--light-bg3);
+    border-bottom: solid 1px var(--light-bg3);
+}
+
+.handlers-container {
+    position: absolute;
+    width: 100%;
+}
+
+.table-head {
+    position: sticky;
+    top: 0;
+}
+
+.caret-bar{
+    animation: blink var(--animation-duration-1000) step-end infinite;
+    border-left: 2px solid white;
+}

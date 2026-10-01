@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PSoftware</title>
+    <style>
+      @font-face {
+        font-family: "Red Hat Display";
+        src: url("/fonts/RedHatDisplay-Regular.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Red Hat Display";
+        src: url("/fonts/RedHatDisplay-Bold.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 700 900;
+        font-display: swap;
+      }
+
+      #psoft-startup {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.25rem;
+        overflow: hidden;
+        background: #000;
+        color: #fff;
+        font-family: var(--font, "Red Hat Display", sans-serif);
+        opacity: 1;
+        transition: opacity var(--animation-duration-300, 300ms) ease-out;
+      }
+
+      #psoft-startup.psoft-startup-leaving {
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .psoft-startup-content {
+        display: flex;
+        width: 100%;
+        max-width: 42rem;
+        min-height: 8rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-align: center;
+        transition:
+          opacity var(--animation-duration-300, 300ms) ease-out,
+          transform var(--animation-duration-300, 300ms) ease-out;
+        animation: psoft-startup-enter var(--animation-duration-300, 300ms) ease-out both;
+      }
+
+      .psoft-startup-leaving .psoft-startup-content {
+        opacity: 0;
+        transform: translateX(-1rem);
+      }
+
+      .psoft-startup-logo {
+        display: flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        color: #f26313;
+      }
+
+      .psoft-startup-logo svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .psoft-startup-title {
+        margin: 0;
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+        font-weight: 900;
+      }
+
+      .psoft-startup-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.25rem 0 0;
+        color: var(--grey, #abb0ba);
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+
+      .psoft-startup-loader {
+        width: 1rem;
+        height: 1rem;
+        animation: psoft-startup-spin var(--animation-duration-1000, 1s) linear infinite;
+      }
+
+      @keyframes psoft-startup-enter {
+        from {
+          opacity: 0;
+          transform: translateX(1.5rem);
+        }
+      }
+
+      @keyframes psoft-startup-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #psoft-startup,
+        .psoft-startup-content {
+          transition-duration: 0ms;
+          animation-duration: 0ms;
+        }
+      }
+    </style>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div id="psoft-startup" role="status" aria-live="polite" aria-label="Démarrage de PSoftware">
+      <div class="psoft-startup-content">
+        <div class="psoft-startup-logo">
+          <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <path
+              d="M83.5609 23.1057L75.7735 44.8362C75.1662 46.5308 74.6567 48.255 74.2457 50C74.6567 51.745 75.1662 53.4692 75.7735 55.1638L83.5609 76.8943C84.2373 78.7816 81.9409 80.2839 80.5819 78.8431L74.1851 72.0608L78.8896 97.7832C79.277 99.9014 76.4568 100.895 75.513 98.9733L66.3321 80.2757C63.6624 74.8386 59.6228 70.2479 54.64 66.9882C49.6571 63.7284 43.9157 61.9207 38.0219 61.7556L17.7538 61.1882C15.6703 61.1298 15.3301 58.0684 17.3466 57.5227L44.0946 50.2847C44.4308 50.1938 44.7657 50.0988 45.0993 50C44.7657 49.9012 44.4308 49.8062 44.0946 49.7153L17.3466 42.4773C15.3301 41.9316 15.6703 38.8702 17.7538 38.8118L38.0219 38.2444C43.9157 38.0794 49.6571 36.2716 54.64 33.0118C59.6228 29.7521 63.6624 25.1614 66.3321 19.7243L75.513 1.02666C76.4568 -0.895413 79.277 0.0985982 78.8896 2.21678L74.1851 27.9392L80.5819 21.1569C81.9409 19.7161 84.2373 21.2184 83.5609 23.1057Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+        <h1 class="psoft-startup-title">Démarrage de PSoftware</h1>
+        <p class="psoft-startup-status">
+          <svg class="psoft-startup-loader ui-loader-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+          Patientez pendant la préparation de l’application…
+        </p>
+      </div>
+    </div>
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>

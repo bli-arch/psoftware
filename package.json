@@ -1,0 +1,45 @@
+{
+  "name": "psoft",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "tauri": "tauri"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@humanspeak/svelte-headless-table": "^6.0.11",
+    "@lucide/lab": "^0.1.2",
+    "@tailwindcss/vite": "^4.3.2",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-opener": "^2.5.4",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@types/sortablejs": "^1.15.9",
+    "@xyflow/svelte": "^1.6.2",
+    "bits-ui": "2.4.1",
+    "clsx": "^2.1.1",
+    "daisyui": "^5.6.16",
+    "lucide-svelte": "^0.523.0",
+    "pdfjs-dist": "^6.2.108",
+    "sortablejs": "^1.15.7",
+    "svelte-headless-table": "^0.18.3",
+    "svelte-sonner": "^1.1.1",
+    "tailwind-merge": "^3.6.0",
+    "vaul-svelte": "^0.3.2"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.69.2",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@tauri-apps/cli": "^2.11.4",
+    "svelte": "^5.56.4",
+    "svelte-check": "^4.7.2",
+    "typescript": "~7.0.2",
+    "vite": "^6.4.3"
+  }
+}
