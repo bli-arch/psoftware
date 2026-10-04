@@ -2,7 +2,7 @@
 
 @config "../tailwind.config.ts";
 
-@source inline("bg-slate-50 bg-stone-50");
+@source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,950}");
 
 @font-face {
     font-family: "Red Hat Display";

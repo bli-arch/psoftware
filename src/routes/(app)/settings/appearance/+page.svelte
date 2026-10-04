@@ -139,11 +139,6 @@
                         onInput={(color) => (accent = color)}
                     />
                 </div>
-
-                <div class="flex items-center gap-2 text-xs font-medium text-(--grey)">
-                    <span class="size-3 rounded-full" style={`background: ${activeAccent?.value ?? accent}`}></span>
-                    <span>{activeAccent?.label ?? "Couleur personnalisée"}</span>
-                </div>
             </div>
         </SettingsRow>
 

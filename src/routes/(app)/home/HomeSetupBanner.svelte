@@ -146,7 +146,7 @@
 
 {#if visible}
     <section class="mx-6 mt-5 min-w-0 overflow-hidden rounded-xl border border-(--user-color) bg-(--light-bg1) text-(--dark-bg1)">
-        <div class="flex items-center justify-between gap-4 bg-[linear-gradient(45deg,var(--user-color-transparent),white_24%)] px-4 py-2.5">
+        <div class="flex items-center justify-between gap-4 bg-linear-45/srgb from-(--user-color-transparent) to-(--light-bg1) to-24% px-4 py-2.5">
             <div class="flex min-w-0 items-center gap-3">
                 <span class="flex shrink-0 items-center justify-center text-(--user-color)">
                     <Icon.ListChecks size={20} strokeWidth={1.6} />

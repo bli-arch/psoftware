@@ -1928,12 +1928,12 @@
     "file": "licenses/9a9e4447f0d6d9c3af70.txt"
   },
   {
-    "id": "1f52972ad96073ea6517",
+    "id": "57c235a6e012c8e35313",
     "name": "Rust standard library",
-    "version": "rustc 1.87.0 (17067e9ac 2025-05-09)",
+    "version": "rustc 1.98.1 (48a229cea 2026-09-01)",
     "license": "MIT OR Apache-2.0 et licences tierces",
     "source": "https://www.rust-lang.org/",
-    "file": "licenses/1f52972ad96073ea6517.txt"
+    "file": "licenses/57c235a6e012c8e35313.txt"
   },
   {
     "id": "6ba67d9c8be4193f646f",

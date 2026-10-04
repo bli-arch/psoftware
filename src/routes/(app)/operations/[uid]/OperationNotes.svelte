@@ -155,26 +155,30 @@
     const addNote = async () => {
         const text = draft.trim();
         if (!operationId || !text || saving) return;
+        const currentOperationId = operationId;
+        const generation = loadGeneration;
         saving = true;
         error = null;
         try {
             const created = await apiPost("/core/notes/", {
-                operation: operationId,
+                operation: currentOperationId,
                 data: text,
             }) as OperationNote;
+            if (generation !== loadGeneration || operationId !== currentOperationId) return;
             draft = "";
+            onChanged?.();
             if (created?.id) {
                 notes = [...notes.filter((note) => note.id !== created.id), created];
                 totalCount += 1;
                 hasOlder = notes.length < totalCount;
                 notifyLoaded();
                 await tick();
-                scrollToLatest();
+                if (generation === loadGeneration && operationId === currentOperationId) scrollToLatest();
             } else {
                 await refresh();
             }
-            onChanged?.();
         } catch (e) {
+            if (generation !== loadGeneration || operationId !== currentOperationId) return;
             console.error("Failed to add note", e);
             error = "Impossible d'ajouter la note.";
         } finally {
@@ -280,10 +284,11 @@
                     bind:value={draft}
                     onkeydown={onKeydown}
                     maxlength={1000}
+                    disabled={saving}
                     resize="none"
                     autoGrow
                     rows={1}
-                    parentClass="min-h-10 max-h-30 [&>textarea]:min-h-[22px]! [&>textarea]:max-h-[102px]!"
+                    parentClass="min-h-10 max-h-30 [&>textarea]:min-h-6! [&>textarea]:max-h-26!"
                 />
             </div>
             <Button

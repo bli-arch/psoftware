@@ -7,6 +7,7 @@
     import MyDialog from "$lib/components/MyDialog.svelte";
     import { Button, PasswordInput, TextInput } from "$lib/components/istyler";
     import { SettingsGroup, SettingsRow, SettingsSection } from "$lib/components/settings";
+    import { getRowTone } from "$lib/components/settings/rowTone";
     import DisplayValue from "$lib/components/table/DisplayValue.svelte";
     import {
         memberDisplayName,
@@ -173,12 +174,12 @@
 <div class="flex w-full flex-col gap-5">
     <Accordion.Root type="multiple" bind:value={openSections} class="flex flex-col gap-2">
         <Accordion.Item value="personal-information" class="overflow-hidden rounded-xl border border-(--light-bg3) bg-(--light-bg1)">
-            <Accordion.Header>
+            <Accordion.Header style={getRowTone("bg-blue-50 text-blue-700").background}>
                 <FormPageAccordionTrigger
                     title="Informations personnelles"
                     preview={`${memberDisplayName(member)} · @${member.username}`}
                     icon="UserRound"
-                    iconClass="bg-(--page-icon-user-transparent) text-(--page-icon-user)"
+                    iconClass="bg-blue-50 text-blue-700"
                     open={openSections.includes("personal-information")}
                 />
             </Accordion.Header>

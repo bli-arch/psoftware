@@ -382,7 +382,8 @@ export const getPageIconToneStyle = (page: any, gradient = false) => {
     const iconColor = typeof page?.iconColor === "string" ? page.iconColor : "";
     if (gradient) {
         const color = cssColor(iconColor, "var(--page-icon-user)");
-        return `background:linear-gradient(45deg, color-mix(in srgb, ${color} 12%, white), white 24%);`;
+        const tint = `light-dark(color-mix(in srgb, ${color} 12%, var(--light-bg1)), color-mix(in srgb, ${color} 24%, var(--light-bg1)))`;
+        return `background:linear-gradient(45deg, ${tint}, var(--light-bg1) 24%);`;
     }
     return pageIconToneClasses[iconColor] ? undefined : colorToneStyle(iconColor, "");
 };

@@ -177,12 +177,13 @@
 
     function discardCurrentState() {
         if (!currentState || !editSnapshot) return;
+        const snapshot = editSnapshot;
 
         if (!currentState.id) {
             states = withStepOrder(states.filter((state) => state.uuid !== currentState?.uuid));
         } else {
             states = states.map((state) =>
-                state.uuid === currentState?.uuid ? cloneState(editSnapshot) : state
+                state.uuid === currentState?.uuid ? cloneState(snapshot) : state
             );
         }
 

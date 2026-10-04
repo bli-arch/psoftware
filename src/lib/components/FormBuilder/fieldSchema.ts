@@ -902,7 +902,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "icon",
                     label: "Icône du champ",
                     comp: IconPicker,
-                    defaultValue: (props) => props.mode === "time-ms" ? "Timer" : props.mode === "time" ? "Clock3" : "CalendarDays",
+                    defaultValue: (props: Record<string, any>) => props.mode === "time-ms" ? "Timer" : props.mode === "time" ? "Clock3" : "CalendarDays",
                     extra: { placeholder: "Rechercher une icône" },
                 },
                 {
@@ -970,7 +970,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "displayValue",
                     label: "Affichage",
                     comp: DisplayInput,
-                    defaultValue: (props) => props.mode === "time" || props.mode === "time-ms" ? "text" : "date",
+                    defaultValue: (props: Record<string, any>) => props.mode === "time" || props.mode === "time-ms" ? "text" : "date",
                     extra: (props) => ({
                         description: "Format d'affichage dans les tableaux et fiches.",
                         options: dateDisplayOptions(props.mode),
@@ -982,7 +982,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "format",
                     label: "Format d’affichage",
                     comp: DateFormatInput,
-                    defaultValue: (props) => defaultDateDisplayFormat(props.mode),
+                    defaultValue: (props: Record<string, any>) => defaultDateDisplayFormat(props.mode),
                     visibleWhen: (props) => props.displayValue === "date",
                     validate: (value, props) => validateDateFormat(String(value ?? ""), {
                         required: true,

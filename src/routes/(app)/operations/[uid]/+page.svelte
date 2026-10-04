@@ -350,8 +350,8 @@
         <div class="flex min-h-0 flex-1 overflow-hidden">
             <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
                 <section
-                    class="relative shrink-0 border-b border-(--light-bg3) px-7 py-5"
-                    style:background={`linear-gradient(135deg, ${currentStateColor} -48%, white 16%)`}
+                    class="relative shrink-0 border-b border-(--light-bg3) bg-(--light-bg1) bg-linear-135/srgb from-(--status-color)/25 to-(--light-bg1) to-16% px-7 py-5"
+                    style:--status-color={currentStateColor}
                 >
                     <div class="flex items-start justify-between gap-5">
                         <div class="min-w-0">

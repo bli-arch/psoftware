@@ -33,7 +33,6 @@ function fallbackRouteTransition(
     navigationComplete: Promise<void>,
 ) {
     const id = ++transitionId;
-    const halfDuration = duration / 2;
     const fadedOpacity = motion.fade ? 0 : 1;
     const exitX = motion.slide === false ? 0 : motion.direction * -16;
     const enterX = motion.slide === false ? 0 : motion.direction * 24;
@@ -41,12 +40,12 @@ function fallbackRouteTransition(
         (element): element is HTMLElement => element instanceof HTMLElement,
     );
     const outgoingOptions: KeyframeAnimationOptions = {
-        duration: halfDuration,
+        duration: duration * .75,
         easing: "ease-in-out",
         fill: "both",
     };
     const incomingOptions: KeyframeAnimationOptions = {
-        duration: halfDuration,
+        duration: duration * .75,
         easing: "ease-in-out",
         fill: "both",
     };
