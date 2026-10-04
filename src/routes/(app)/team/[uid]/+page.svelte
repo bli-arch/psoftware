@@ -164,7 +164,7 @@
             <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
                 <section
                     class="relative shrink-0 border-b border-(--light-bg3) px-7 py-5"
-                    style:background={`linear-gradient(135deg, ${statusColor} -48%, white 16%)`}
+                    style:background={`linear-gradient(135deg, ${statusColor} -48%, var(--light-bg1) 16%)`}
                 >
                     <div class="flex items-start justify-between gap-5">
                         <div class="flex min-w-0 items-center gap-3">

@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import { apiGet, apiPost } from "$lib/api";
-    import { Button, Textarea } from "$lib/components/istyler";
+    import { apiGet, apiPatch, apiPost } from "$lib/api";
+    import { Button, Checkbox, Textarea } from "$lib/components/istyler";
+    import { currentUser } from "$lib/auth";
     import NoteMarkup from "$lib/components/notes/NoteMarkup.svelte";
     import UserAvatar from "$lib/components/UserAvatar.svelte";
     import { strftime } from "$lib/utils";
@@ -14,12 +15,14 @@
         data: string;
         created_at: string;
         creator?: Record<string, any>;
+        tracking_public?: boolean;
     };
 
     let {
         operationId,
         active = false,
         markdownEnabled = true,
+        trackingEnabled = false,
         onLoaded,
         onCountChange,
         onChanged,
@@ -27,6 +30,7 @@
         operationId: number | null;
         active?: boolean;
         markdownEnabled?: boolean;
+        trackingEnabled?: boolean;
         onLoaded?: (notes: OperationNote[]) => void;
         onCountChange?: (count: number) => void;
         onChanged?: () => void;
@@ -39,6 +43,8 @@
     let totalCount = $state(0);
     let hasOlder = $state(false);
     let draft = $state("");
+    let publishDraft = $state(false);
+    let updatingPublication = $state<number | null>(null);
     let loading = $state(false);
     let loadingOlder = $state(false);
     let saving = $state(false);
@@ -46,6 +52,7 @@
     let viewport = $state<HTMLDivElement | null>(null);
     let needsInitialScroll = $state(false);
     let loadGeneration = 0;
+    const canPublish = $derived(Boolean($currentUser?.administrator || $currentUser?.permissions?.includes("tracking.publish")));
 
     const creatorName = (creator?: Record<string, any>) =>
         creator?.username || [creator?.name, creator?.lastname].filter(Boolean).join(" ") || "Utilisateur";
@@ -155,14 +162,19 @@
     const addNote = async () => {
         const text = draft.trim();
         if (!operationId || !text || saving) return;
+        const currentOperationId = operationId;
+        const generation = loadGeneration;
         saving = true;
         error = null;
         try {
             const created = await apiPost("/core/notes/", {
-                operation: operationId,
+                operation: currentOperationId,
                 data: text,
+                ...(canPublish && trackingEnabled ? { tracking_public: publishDraft } : {}),
             }) as OperationNote;
+            if (generation !== loadGeneration || operationId !== currentOperationId) return;
             draft = "";
+            publishDraft = false;
             if (created?.id) {
                 notes = [...notes.filter((note) => note.id !== created.id), created];
                 totalCount += 1;
@@ -179,6 +191,24 @@
             error = "Impossible d'ajouter la note.";
         } finally {
             saving = false;
+        }
+    };
+
+    const changePublication = async (note: OperationNote) => {
+        if (!canPublish || updatingPublication !== null) return;
+        const currentOperationId = operationId;
+        const generation = loadGeneration;
+        updatingPublication = note.id;
+        try {
+            const updated = await apiPatch(`/core/notes/${note.id}/`, { tracking_public: !note.tracking_public }) as OperationNote;
+            if (generation !== loadGeneration || operationId !== currentOperationId) return;
+            notes = notes.map((item) => item.id === updated.id ? updated : item);
+            notifyLoaded();
+            onChanged?.();
+        } catch {
+            toast.error("Impossible de modifier la publication de cette note.");
+        } finally {
+            if (generation === loadGeneration) updatingPublication = null;
         }
     };
 
@@ -256,6 +286,9 @@
                                 <span>
                                     {`${strftime(note.created_at, "%d %B %Y", "fr-FR").toLowerCase()} · ${strftime(note.created_at, "%Hh%M", "fr-FR")}`}
                                 </span>
+                                {#if note.tracking_public}
+                                    <span class="inline-flex items-center gap-1 text-(--blue)"><Icon.Globe size={11} /> Publique</span>
+                                {/if}
                             </div>
                             <div class="whitespace-pre-wrap text-xs leading-5 text-(--dark-bg1)">
                                 {#if markdownEnabled}
@@ -265,6 +298,24 @@
                                 {/if}
                             </div>
                         </div>
+                        {#if canPublish && (trackingEnabled || note.tracking_public)}
+                            <Button
+                                variant="ghost"
+                                size="xs"
+                                icon={updatingPublication === note.id ? "Loader2" : note.tracking_public ? "EyeOff" : "Globe"}
+                                iconAnimation={updatingPublication === note.id ? "spin" : undefined}
+                                tooltip={note.tracking_public ? "Retirer du suivi client" : "Publier dans le suivi client"}
+                                aria-label={note.tracking_public ? "Retirer du suivi client" : "Publier dans le suivi client"}
+                                class="size-7 shrink-0 px-0"
+                                disabled={updatingPublication !== null}
+                                confirm={!note.tracking_public}
+                                confirmTitle="Publier cette note ?"
+                                confirmDescription="Son contenu sera transmis au site externe et accessible au client."
+                                confirmCancelLabel="Annuler"
+                                confirmConfirmLabel="Publier"
+                                onclick={() => changePublication(note)}
+                            />
+                        {/if}
                     </div>
                 {/each}
             </div>
@@ -272,6 +323,14 @@
     </div>
 
     <div class="shrink-0 border-t border-(--light-bg3) px-3 py-2.5">
+        {#if canPublish && trackingEnabled}
+            <div class="mb-2">
+                <Checkbox label="Publier dans le suivi client" bind:value={publishDraft} disabled={saving} switchMode side="left" />
+                {#if publishDraft}
+                    <p class="mt-1 text-xs leading-4 text-(--orange)">Cette note sera transmise au site externe et accessible au client.</p>
+                {/if}
+            </div>
+        {/if}
         <div class="flex items-end gap-2">
             <div class="min-w-0 flex-1">
                 <Textarea
@@ -280,6 +339,7 @@
                     bind:value={draft}
                     onkeydown={onKeydown}
                     maxlength={1000}
+                    disabled={saving}
                     resize="none"
                     autoGrow
                     rows={1}

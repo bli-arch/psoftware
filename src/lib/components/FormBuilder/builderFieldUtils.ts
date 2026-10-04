@@ -90,7 +90,7 @@ export function settingsSchemaFor(type: InputType, nested = false): FieldSchemaE
     const schema = fieldSchema[type] ?? [];
     if (!nested) return schema;
 
-    const nestedOnlyKeys = new Set(["clientIdentityRole", "displayValue", "receiptDisplay", "receiptLabel", "receiptFormat", "receiptOrder"]);
+    const nestedOnlyKeys = new Set(["clientIdentityRole", "displayValue", "receiptDisplay", "receiptLabel", "receiptFormat", "receiptOrder", "trackingDisplay", "trackingLabel", "trackingOrder"]);
 
     return schema
         .map((entry) => {
@@ -111,7 +111,7 @@ function stableFieldName(props: Record<string, any> = {}) {
 }
 
 function stripNestedDisplay(config: Record<string, any>) {
-    const { clientIdentityRole, displayValue, operationDisplay, format, receiptDisplay, receiptLabel, receiptFormat, receiptOrder, ...rest } = config;
+    const { clientIdentityRole, displayValue, operationDisplay, format, receiptDisplay, receiptLabel, receiptFormat, receiptOrder, trackingDisplay, trackingLabel, trackingOrder, ...rest } = config;
     return rest;
 }
 

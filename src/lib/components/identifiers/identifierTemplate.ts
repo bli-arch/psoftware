@@ -226,8 +226,8 @@ const pickChars = (chars: string, length = 1) =>
     Array.from({ length: Math.min(MAX_IDENTIFIER_PART_LENGTH, Math.max(1, Math.floor(length))) }, () => chars[randomInt(chars.length)]).join("");
 
 const applyCaseMode = (mode: IdentifierCaseMode | undefined, mixedChars: string) => {
-    if (mode === "lower") return LOWERCASE;
-    if (mode === "upper") return UPPERCASE;
+    if (mode === "lower") return mixedChars.includes("0") ? `${LOWERCASE}${NUMBERS}` : LOWERCASE;
+    if (mode === "upper") return mixedChars.includes("0") ? `${UPPERCASE}${NUMBERS}` : UPPERCASE;
     return mixedChars;
 };
 
@@ -292,7 +292,7 @@ export const estimateIdentifierEntropyBits = (parts: IdentifierPart[]) => {
 
         if (part.type === "randomNumbers") return bits + length * Math.log2(NUMBERS.length);
         if (part.type === "randomLetters") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length : LOWERCASE.length);
-        if (part.type === "randomChars") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length + NUMBERS.length : LOWERCASE.length);
+        if (part.type === "randomChars") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length + NUMBERS.length : LOWERCASE.length + NUMBERS.length);
         return bits;
     }, 0);
 };
@@ -316,7 +316,7 @@ export const estimateIdentifierCollisionCount = (parts: IdentifierPart[]) => {
 
         if (part.type === "randomNumbers") return bits + length * Math.log2(NUMBERS.length);
         if (part.type === "randomLetters") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length : LOWERCASE.length);
-        if (part.type === "randomChars") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length + NUMBERS.length : LOWERCASE.length);
+        if (part.type === "randomChars") return bits + length * Math.log2(part.caseMode === "mixed" ? LETTERS.length + NUMBERS.length : LOWERCASE.length + NUMBERS.length);
         return bits;
     }, 0);
 
@@ -324,4 +324,17 @@ export const estimateIdentifierCollisionCount = (parts: IdentifierPart[]) => {
     if (randomBits > 1023) return Infinity;
 
     return Math.max(1, Math.floor(Math.sqrt(2 * 2 ** randomBits * Math.log(2))));
+};
+
+export const validateTrackingIdentifierTemplate = (template: string): string | null => {
+    const error = validateIdentifierTemplate(template);
+    if (error) return error;
+    const parts = parseIdentifierTemplate(template);
+    if (parts.some((part) => !["text", "randomChars", "randomLetters", "randomNumbers"].includes(part.type))) {
+        return "Seuls du texte fixe et des caractères aléatoires sont autorisés.";
+    }
+    if (parts.some((part) => part.type === "text" && !/^[A-Za-z0-9_-]*$/.test(part.value ?? ""))) {
+        return "Le texte fixe accepte uniquement des lettres, chiffres, tirets et underscores.";
+    }
+    return estimateIdentifierEntropyBits(parts) < 128 ? "L’identifiant doit contenir au moins 128 bits aléatoires." : null;
 };

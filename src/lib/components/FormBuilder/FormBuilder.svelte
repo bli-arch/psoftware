@@ -49,7 +49,7 @@
     }
 
     function stripNestedDisplayProps(props: Record<string, unknown>) {
-        const { clientIdentityRole, displayValue, operationDisplay, receiptDisplay, receiptLabel, receiptFormat, receiptOrder, ...rest } = props;
+        const { clientIdentityRole, displayValue, operationDisplay, receiptDisplay, receiptLabel, receiptFormat, receiptOrder, trackingDisplay, trackingLabel, trackingOrder, ...rest } = props;
         return rest;
     }
 

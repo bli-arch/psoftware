@@ -17,7 +17,7 @@
     const isCurrentPage = (regex: RegExp, pathname: string) => regex.test(pathname);
     const can = (key: string) => Boolean($currentUser?.administrator || $currentUser?.permissions?.includes(key));
     const canAny = (keys: string[]) => keys.some(can);
-    const routeOrder = ["myaccount", "this-device", "devices", "appearance", "shortcuts", "privacy", "general", "operation", "client", "team", "documents", "server", "about"];
+    const routeOrder = ["myaccount", "this-device", "devices", "appearance", "shortcuts", "privacy", "general", "operation", "client", "team", "documents", "api", "server", "about"];
     let routeContainer: HTMLElement | null = null;
     $: clientSetupRequired = Boolean($workspaceSetup && (!$workspaceSetup.clientForm || !$workspaceSetup.clientColumns || !$workspaceSetup.clientIdentifier));
     $: operationSetupRequired = Boolean($workspaceSetup && (!$workspaceSetup.operationForm || !$workspaceSetup.operationColumns || !$workspaceSetup.operationStatuses || !$workspaceSetup.operationIdentifier));
@@ -76,7 +76,7 @@
         </NavButton> -->
     </Menu>
 
-    {#if canAny(["settings.general.modify", "settings.client.modify", "settings.operation.modify", "settings.products.modify", "settings.server.modify", "roles.manage"])}
+    {#if canAny(["settings.general.modify", "settings.client.modify", "settings.operation.modify", "settings.products.modify", "settings.server.modify", "roles.manage", "tracking.manage"])}
         <div class="text-xs font-semibold font-(family-name:--font) text-(--grey) py-2 overflow-hidden text-nowrap h-9">
             <span class:flex-center={collapsed}>
                 {collapsed ? "-" : "Paramètres avancés"}
@@ -108,6 +108,11 @@
         {#if $currentUser?.administrator}
             <NavButton {collapsed} href="/settings/documents" active={isCurrentPage(/\/documents/, $page.url.pathname)} title="Documents">
                 <Icon.Files size={16} class="min-w-5" />
+            </NavButton>
+        {/if}
+        {#if can("tracking.manage")}
+            <NavButton {collapsed} href="/settings/api" active={isCurrentPage(/\/api/, $page.url.pathname)} title="API de suivi">
+                <Icon.Waypoints size={16} class="min-w-5" />
             </NavButton>
         {/if}
         {#if can("settings.server.modify")}

@@ -1,72 +1,79 @@
 <script lang="ts">
-    import { SettingsAccordionRow, SettingsExpandableRow, SettingsPage, SettingsRow, SettingsSection, SettingsTable, SettingsToggleRow } from "$lib/components/settings";
-    import { Button, NumberInput, Select, TextInput } from "$lib/components/istyler";
-    import { appSettings } from "$lib/settings";
-    import { operationPlural, operationPluralLower, operationSingularLower } from "$lib/operationDisplay";
+    import { onMount } from "svelte";
+    import { currentUser } from "$lib/auth";
+    import { Button } from "$lib/components/istyler";
+    import { SettingsPage, SettingsSection } from "$lib/components/settings";
+    import { getTrackingConfig, patchTrackingConfig, performTrackingAction, trackingErrorMessage, type TrackingAction, type TrackingConfig, type TrackingConfigPatch } from "$lib/tracking";
+    import TrackingConnection from "./TrackingConnection.svelte";
+    import TrackingPublication from "./TrackingPublication.svelte";
+    import TrackingDelivery from "./TrackingDelivery.svelte";
 
-    let retryCount = $state(3);
-    let retryDelay = $state(30);
-    let api = $state({
-        operationCreate: true,
-        statusChange: true,
-        clientCreate: false,
-        redactPrivateFields: true,
-        retryFailures: true,
-        notifyFailures: true,
-        testMode: false,
-    });
+    let config = $state<TrackingConfig | null>(null);
+    let busy = $state(false);
+    let loading = $state(true);
+    let error = $state("");
+    let notice = $state("");
+    const allowed = $derived(Boolean($currentUser?.administrator || $currentUser?.permissions?.includes("tracking.manage")));
+
+    async function load() {
+        if (!allowed || busy) return;
+        loading = true;
+        error = "";
+        try { config = await getTrackingConfig(); }
+        catch (exception) { error = trackingErrorMessage(exception, "Impossible de charger les réglages de suivi."); }
+        finally { loading = false; }
+    }
+
+    async function save(patch: TrackingConfigPatch) {
+        if (!allowed || busy || loading) return false;
+        busy = true;
+        error = "";
+        notice = "";
+        try {
+            config = await patchTrackingConfig(patch);
+            notice = "Réglages enregistrés. Les changements publiés prennent effet sur le site après livraison.";
+            return true;
+        } catch (exception) {
+            error = trackingErrorMessage(exception, "Impossible d’enregistrer les réglages de suivi.");
+            return false;
+        } finally { busy = false; }
+    }
+
+    async function act(action: TrackingAction) {
+        if (!allowed || busy || loading) return;
+        busy = true;
+        error = "";
+        notice = "";
+        try {
+            config = await performTrackingAction(action);
+            notice = action === "test" ? "Connexion testée : le site a confirmé la réception du message de test." : "Action enregistrée.";
+        } catch (exception) {
+            error = trackingErrorMessage(exception, "Impossible d’effectuer cette action de suivi.");
+        } finally { busy = false; }
+    }
+
+    onMount(() => { void load(); });
 </script>
 
-<SettingsPage
-    title="API"
-    description="Configurez les entrées API et les envois contrôlés."
->
-    <SettingsSection label="Endpoints">
-        <SettingsAccordionRow value="active-endpoints" icon="Waypoints" title="✘ Endpoints actifs" description="Liste les points d’entrée configurés." toneClass="bg-blue-50 text-blue-700">
-            {#snippet table()}
-                <SettingsTable columns={[{ key: "name", label: "Nom" }, { key: "method", label: "Méthode" }, { key: "url", label: "URL" }, { key: "status", label: "Statut" }]} rows={[{ name: `Création ${operationSingularLower($appSettings.value.operation)}`, method: "POST", url: "/api/operations", status: "Actif" }, { name: "Client minimal", method: "POST", url: "/api/clients", status: "Inactif" }]} />
-            {/snippet}
-        </SettingsAccordionRow>
-        <SettingsAccordionRow value="new-endpoint" icon="Plus" title="✘ Nouvel endpoint" description="Ajoute un nouveau point d’entrée API." toneClass="bg-emerald-50 text-emerald-700">
-            {#snippet action()}
-                <Button variant="secondary" size="sm" icon="Plus" label="Ajouter" />
-            {/snippet}
-            <div class="grid gap-3 md:grid-cols-[120px_1fr]">
-                <Select name="endpoint-method" label="Méthode" value="POST" allowDeselect={false} options={[{ label: "POST", value: "POST" }, { label: "PUT", value: "PUT" }, { label: "PATCH", value: "PATCH" }]} />
-                <TextInput name="endpoint-url" label="URL" placeholder="https://..." value="" />
-            </div>
-        </SettingsAccordionRow>
-        <SettingsToggleRow icon="CirclePlus" title={`✘ Création de ${operationSingularLower($appSettings.value.operation)}`} description={`Autorise l’API à créer des ${operationPluralLower($appSettings.value.operation)}.`} name="api-operation-create" toneClass="bg-blue-50 text-blue-700" bind:value={api.operationCreate} />
-        <SettingsToggleRow icon="Route" title="✘ Changement de statut" description="Autorise l’API à modifier les statuts." name="api-status-change" toneClass="bg-orange-50 text-orange-700" bind:value={api.statusChange} />
-        <SettingsToggleRow icon="UserRoundPlus" title="✘ Création client" description="Autorise l’API à créer des clients." name="api-client-create" toneClass="bg-violet-50 text-violet-700" bind:value={api.clientCreate} />
-    </SettingsSection>
-
-    <SettingsSection label="Sécurité API">
-        <SettingsRow icon="KeyRound" title="✘ Jetons API" description="Gère les jetons d’accès API." toneClass="bg-amber-50 text-amber-700">
-            {#snippet table()}
-                <SettingsTable columns={[{ key: "name", label: "Jeton" }, { key: "scope", label: "Portée" }, { key: "lastUse", label: "Dernier usage" }]} rows={[{ name: "Atelier", scope: operationPlural($appSettings.value.operation), lastUse: "Aujourd’hui" }]} />
-            {/snippet}
-        </SettingsRow>
-        <SettingsRow icon="KeyRound" title="✘ Révoquer un jeton" description="Désactive un jeton API existant." variant="destructive">
-            {#snippet action()}
-                <Button variant="error" size="sm" icon="KeyRound" label="Révoquer" />
-            {/snippet}
-        </SettingsRow>
-        <SettingsToggleRow icon="ShieldEllipsis" title="✘ Masquer les champs privés" description="Exclut les champs privés des réponses API." name="api-redact-private-fields" toneClass="bg-red-50 text-red-700" bind:value={api.redactPrivateFields} />
-    </SettingsSection>
-
-    <SettingsSection label="Fiabilité">
-        <SettingsToggleRow icon="RefreshCw" title="✘ Réessayer les échecs" description="Relance automatiquement les appels échoués." name="api-retry-failures" toneClass="bg-emerald-50 text-emerald-700" bind:value={api.retryFailures} />
-        <SettingsExpandableRow icon="ListRestart" title="✘ Politique de réessai" description="Définit le nombre et le délai des tentatives." name="api-retry-policy" toneClass="bg-stone-100 text-stone-700" value={api.retryFailures}>
-            <div class="grid gap-3 md:grid-cols-2">
-                <NumberInput name="retry-count" label="Tentatives" min={0} max={10} bind:value={retryCount} />
-                <NumberInput name="retry-delay" label="Délai" suffix="s" min={1} max={600} bind:value={retryDelay} />
-            </div>
-        </SettingsExpandableRow>
-        <SettingsToggleRow icon="BellRing" title="✘ Notifier les échecs" description="Alerte les administrateurs en cas d’échec." name="api-notify-failures" toneClass="bg-red-50 text-red-700" bind:value={api.notifyFailures} />
-    </SettingsSection>
-
-    <SettingsSection label="Test et routage">
-        <SettingsToggleRow icon="FlaskConical" title="✘ Mode test" description="Permet de tester l’API sans impact réel." name="api-test-mode" toneClass="bg-cyan-50 text-cyan-700" bind:value={api.testMode} />
-    </SettingsSection>
+<SettingsPage title="API de suivi" description="Publiez les informations autorisées vers votre site, sans ouvrir un accès à PServer.">
+    {#snippet actions()}
+        {#if allowed}<Button variant="secondary" size="sm" icon="RefreshCw" label="Actualiser" disabled={busy || loading} onclick={() => { void load(); }} />{/if}
+    {/snippet}
+    {#if !allowed}
+        <p role="alert" class="text-sm text-(--grey)">Vous n’avez pas l’autorisation de gérer l’API de suivi.</p>
+    {:else}
+        {#if error}<p role="alert" class="rounded-xl border border-(--red)/20 bg-(--red)/5 px-4 py-3 text-sm text-(--red)">{error}</p>{/if}
+        {#if notice}<p role="status" class="rounded-xl border border-(--green)/20 bg-(--green)/5 px-4 py-3 text-sm text-(--green)">{notice}</p>{/if}
+        {#if loading && !config}
+            <p role="status" class="text-sm text-(--grey)">Chargement des réglages de suivi…</p>
+        {:else if config}
+            <SettingsSection label="Configuration">
+                <TrackingConnection {config} busy={busy || loading} onSave={save} />
+                <TrackingPublication {config} busy={busy || loading} onSave={save} />
+            </SettingsSection>
+            <TrackingDelivery {config} busy={busy || loading} onAction={act} />
+        {:else}
+            <Button variant="secondary" size="sm" label="Réessayer" icon="RefreshCw" disabled={busy || loading} onclick={() => { void load(); }} class="w-fit" />
+        {/if}
+    {/if}
 </SettingsPage>

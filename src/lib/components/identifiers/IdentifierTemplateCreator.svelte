@@ -33,6 +33,8 @@
     export let nextId = DEFAULT_IDENTIFIER_PREVIEW_OPTIONS.nextId;
     export let todayCount = DEFAULT_IDENTIFIER_PREVIEW_OPTIONS.todayCount;
     export let allowedTokenTypes: TokenType[] = ["sequence", "today", "date", "randomChars"];
+    export let minimumEntropyBits = 40;
+    export let disabled = false;
 
     const modifierActions: ModifierAction[] = [
         { type: "sequence", label: "Compteur global", help: "Identifiant unique incrémenté pour chaque enregistrement", icon: "ListOrdered", class: "border-orange-200 bg-orange-50 text-orange-800" },
@@ -66,8 +68,8 @@
     $: identifierLength = previewParts.reduce((sum, { text }) => sum + text.length, 0);
     $: identifierMaxed = identifierLength >= MAX_IDENTIFIER_LENGTH;
     $: entropyBits = estimateIdentifierEntropyBits(parts);
-    $: entropyLabel = entropyBits >= 40 ? "Solide" : entropyBits >= 20 ? "Correct" : "Faible";
-    $: entropyClass = entropyBits >= 40 ? "text-(--green)" : entropyBits >= 20 ? "text-(--orange)" : "text-(--red)";
+    $: entropyLabel = entropyBits >= minimumEntropyBits ? "Solide" : entropyBits >= minimumEntropyBits / 2 ? "Correct" : "Faible";
+    $: entropyClass = entropyBits >= minimumEntropyBits ? "text-(--green)" : entropyBits >= minimumEntropyBits / 2 ? "text-(--orange)" : "text-(--red)";
     $: collisionLabel = formatCollisionCount(estimateIdentifierCollisionCount(parts));
 
     function formatCollisionCount(count: number) {
@@ -94,6 +96,7 @@
     }
 
     function updateTokenHost(tokenHost: HTMLElement, nextPart: IdentifierPart) {
+        if (disabled) return;
         const previousSyntax = tokenHost.dataset.identifierSyntax ?? "";
         const nextSyntax = tokenSyntax(nextPart);
         const nodes = Array.from(editor?.childNodes ?? []);
@@ -246,7 +249,7 @@
     }
 
     function handleInput() {
-        if (renderingEditor) return;
+        if (renderingEditor || disabled) return;
 
         const caret = selectionOffset();
         syncValue(editorSyntax());
@@ -254,11 +257,11 @@
     }
 
     function handleBeforeInput(event: InputEvent) {
-        if (identifierMaxed && event.inputType.startsWith("insert")) event.preventDefault();
+        if (disabled || (identifierMaxed && event.inputType.startsWith("insert"))) event.preventDefault();
     }
 
     function insertAction(action: ModifierAction) {
-        if (identifierMaxed) return;
+        if (identifierMaxed || disabled) return;
 
         const caret = selectionOffset();
         const syntax = serializeIdentifierParts([createIdentifierPart(action.type)]);
@@ -291,6 +294,7 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
+        if (disabled) return;
         if (event.key === "Backspace" && removeTokenAtCaret(-1)) event.preventDefault();
         if (event.key === "Delete" && removeTokenAtCaret(1)) event.preventDefault();
         if (event.key === "Enter") event.preventDefault();
@@ -316,7 +320,7 @@
         if (text == null) return;
 
         event.preventDefault();
-        if (identifierMaxed) return;
+        if (identifierMaxed || disabled) return;
         insertPlainText(text.replace(/[\r\n]/g, ""));
     }
 
@@ -383,8 +387,9 @@
             bind:this={editor}
             role="textbox"
             aria-label="Format de l'identifiant"
-            tabindex="0"
-            contenteditable="true"
+            tabindex={disabled ? -1 : 0}
+            aria-disabled={disabled}
+            contenteditable={!disabled}
             class="min-h-10 h-fit w-full rounded-lg border border-(--light-bg3) bg-(--light-bg1) px-3 py-0.75 
                 font-mono text-sm leading-8 text-(--dark-bg1) outline-none transition 
                 empty:before:text-(--grey)/60 empty:before:content-['Composez_le_format_de_l’identifiant'] 
@@ -404,7 +409,7 @@
                 label={action.label}
                 icon={String(action.icon)}
                 class={`w-fit border ${action.class}`}
-                disabled={identifierMaxed}
+                disabled={identifierMaxed || disabled}
                 onmousedown={(event: MouseEvent) => event.preventDefault()}
                 onclick={() => insertAction(action)}
             />

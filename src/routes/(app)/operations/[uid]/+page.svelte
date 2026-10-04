@@ -47,6 +47,8 @@
     import OperationAbout from "./OperationAbout.svelte";
     import OperationDocuments from "./OperationDocuments.svelte";
     import OperationClientRow from "./OperationClientRow.svelte";
+    import OperationTrackingRow from "./OperationTrackingRow.svelte";
+    import type { OperationTracking } from "$lib/tracking";
     import { CollapsibleSidebar } from "$lib/components/menu";
     import DisplayValue from "$lib/components/table/DisplayValue.svelte";
     import * as Icon from "lucide-svelte";
@@ -71,6 +73,8 @@
     let activePanel = "activity";
     let activities: any[] = [];
     let noteCount = 0;
+    let operationTracking: OperationTracking | null = null;
+    let trackingPanel: { refresh?: () => Promise<void> } | null = null;
     let activityPanel: { refresh?: () => Promise<void> } | null = null;
     let activityPrivacy: ActivityPrivacyMap = {};
     let activityPrivacyReady = false;
@@ -215,6 +219,7 @@
             await persistDynamicGroup(section.type, nextSource);
             operation = await apiGet(`/core/operations/${operation.uid}/`);
             await activityPanel?.refresh?.();
+            await trackingPanel?.refresh?.();
             cancelSectionEdit(sectionId);
         } catch (e) {
             console.error("Failed to update section", e);
@@ -251,6 +256,7 @@
             await persistDynamicGroup(pageType, source);
             operation = await apiGet(`/core/operations/${operation.uid}/`);
             await activityPanel?.refresh?.();
+            await trackingPanel?.refresh?.();
         } catch (e) {
             console.error("Failed to update item", e);
             try {
@@ -277,6 +283,7 @@
             });
             operation = { ...operation, state: nextStateId };
             await activityPanel?.refresh?.();
+            await trackingPanel?.refresh?.();
         } catch (e) {
             console.error("Failed to update state", e);
         } finally {
@@ -351,7 +358,7 @@
             <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
                 <section
                     class="relative shrink-0 border-b border-(--light-bg3) px-7 py-5"
-                    style:background={`linear-gradient(135deg, ${currentStateColor} -48%, white 16%)`}
+                    style:background={`linear-gradient(135deg, ${currentStateColor} -48%, var(--light-bg1) 16%)`}
                 >
                     <div class="flex items-start justify-between gap-5">
                         <div class="min-w-0">
@@ -430,6 +437,7 @@
                 </section>
 
                 <section class="min-h-0 flex-1 overflow-y-auto px-7 py-5">
+                    <OperationTrackingRow bind:this={trackingPanel} uid={operation.uid} onChanged={(value) => (operationTracking = value)} />
                     {#if operation.client?.uid || accordionSections.length}
                         <Accordion.Root
                             type="multiple"
@@ -698,8 +706,9 @@
                                                 operationId={operation.id}
                                                 active={activePanel === "notes"}
                                                 markdownEnabled={$appSettings.value.operation.notesMarkdownEnabled}
+                                                trackingEnabled={operationTracking?.enabled === true}
                                                 onCountChange={(count) => (noteCount = count)}
-                                                onChanged={() => activityPanel?.refresh?.()}
+                                                onChanged={() => { void activityPanel?.refresh?.(); void trackingPanel?.refresh?.(); }}
                                             />
                                         </Tabs.Content>
                                     {/if}

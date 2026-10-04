@@ -19,6 +19,7 @@ import OptionListInput from "./OptionListInput.svelte";
 import DisplayInput from "./DisplayInput.svelte";
 import ReceiptDisplayInput from "./ReceiptDisplayInput.svelte";
 import { CLIENT_IDENTITY_OPTIONS } from "$lib/clientIdentity";
+import { hasPermission } from "$lib/auth";
 
 export type FieldSchemaControl = {
     key: string;
@@ -166,6 +167,35 @@ const clientIdentitySection: FieldSchemaGroup = {
         },
     ],
     visibleWhen: (props) => props.formType === "client",
+};
+
+const trackingDisplaySection: FieldSchemaGroup = {
+    title: "Suivi client",
+    description: "Les champs publiés sont transmis au site externe et accessibles au client. Ne publiez aucune information confidentielle.",
+    visibleWhen: (props) => (props.formType === "operation" || props.formType === "client") && hasPermission("tracking.manage"),
+    items: [
+        {
+            key: "trackingDisplay",
+            label: "Publier dans le suivi client",
+            comp: Checkbox,
+            defaultValue: false,
+            extra: { switchMode: true, side: "left" },
+        },
+        {
+            key: "trackingLabel",
+            label: "Libellé public",
+            comp: TextInput,
+            visibleWhen: (props) => props.trackingDisplay === true,
+            extra: (props) => ({ placeholder: props.label || "Libellé du champ", maxlength: 200 }),
+        },
+        {
+            key: "trackingOrder",
+            label: "Ordre d'affichage",
+            comp: NumberInput,
+            visibleWhen: (props) => props.trackingDisplay === true,
+            extra: { min: 0, step: 1, display: "lateral" },
+        },
+    ],
 };
 
 export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
@@ -902,7 +932,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "icon",
                     label: "Icône du champ",
                     comp: IconPicker,
-                    defaultValue: (props) => props.mode === "time-ms" ? "Timer" : props.mode === "time" ? "Clock3" : "CalendarDays",
+                    defaultValue: (props: Record<string, any>) => props.mode === "time-ms" ? "Timer" : props.mode === "time" ? "Clock3" : "CalendarDays",
                     extra: { placeholder: "Rechercher une icône" },
                 },
                 {
@@ -970,7 +1000,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "displayValue",
                     label: "Affichage",
                     comp: DisplayInput,
-                    defaultValue: (props) => props.mode === "time" || props.mode === "time-ms" ? "text" : "date",
+                    defaultValue: (props: Record<string, any>) => props.mode === "time" || props.mode === "time-ms" ? "text" : "date",
                     extra: (props) => ({
                         description: "Format d'affichage dans les tableaux et fiches.",
                         options: dateDisplayOptions(props.mode),
@@ -982,7 +1012,7 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
                     key: "format",
                     label: "Format d’affichage",
                     comp: DateFormatInput,
-                    defaultValue: (props) => defaultDateDisplayFormat(props.mode),
+                    defaultValue: (props: Record<string, any>) => defaultDateDisplayFormat(props.mode),
                     visibleWhen: (props) => props.displayValue === "date",
                     validate: (value, props) => validateDateFormat(String(value ?? ""), {
                         required: true,
@@ -1111,4 +1141,5 @@ export const fieldSchema: Partial<Record<InputType, FieldSchemaEntry[]>> = {
 for (const inputType of Object.keys(fieldSchema) as InputType[]) {
     if (inputType === "text") fieldSchema[inputType]?.push(clientIdentitySection);
     fieldSchema[inputType]?.push(receiptDisplaySection);
+    if (["text", "number", "select", "checkbox", "radio", "range", "date", "textarea"].includes(inputType)) fieldSchema[inputType]?.push(trackingDisplaySection);
 }

@@ -87,6 +87,7 @@ function applyPreferences(preferences: UiPreferences) {
 
     root.style.setProperty("--user-color", preferences.accent);
     root.dataset.theme = activeTheme;
+    root.style.colorScheme = activeTheme;
     root.dataset.density = preferences.density;
     root.dataset.textSize = preferences.textSize;
     root.classList.toggle("ui-high-contrast", preferences.highContrast);

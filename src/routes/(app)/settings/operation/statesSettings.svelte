@@ -3,7 +3,8 @@
     import { onMount, untrack } from "svelte";
     import { toast } from "svelte-sonner";
     import { apiDelete, apiGet, apiPatch, apiPost } from "$lib/api";
-    import { Button, IconPicker, TextInput } from "$lib/components/istyler";
+    import { Button, Checkbox, IconPicker, TextInput } from "$lib/components/istyler";
+    import { currentUser } from "$lib/auth";
     import DisplayValue from "$lib/components/table/DisplayValue.svelte";
     import SettingsDrilldownList, { type SettingsDrilldownItem } from "$lib/components/settings/SettingsDrilldownList.svelte";
 
@@ -15,6 +16,8 @@
         settings: {
             color?: string;
             icon?: string;
+            trackingPublic?: boolean;
+            trackingFinal?: boolean;
         };
     };
 
@@ -38,6 +41,7 @@
     let isSaving = $state(false);
     let editingStateKey: string | null = null;
     let editSnapshot = $state<StateSettings | null>(null);
+    const canManageTracking = $derived(Boolean($currentUser?.administrator || $currentUser?.permissions?.includes("tracking.manage")));
 
     const colorOptions = [
         { value: "", label: "Aucune", textClass: "text-(--grey)", bgClass: "bg-(--light-bg2)", swatchClass: "border border-(--light-bg3) bg-transparent" },
@@ -70,6 +74,8 @@
         return {
             ...(color ? { color } : {}),
             ...(icon ? { icon } : {}),
+            trackingPublic: settings.trackingPublic === true,
+            trackingFinal: settings.trackingFinal === true,
         };
     }
 
@@ -109,6 +115,8 @@
                     settings: normalizeSettings({
                         color: item.settings?.color,
                         icon: item.settings?.icon,
+                        trackingPublic: item.settings?.trackingPublic,
+                        trackingFinal: item.settings?.trackingFinal,
                     }),
                 }))
                 .sort((a, b) => (a.step ?? 0) - (b.step ?? 0) || (a.id ?? 0) - (b.id ?? 0))
@@ -177,12 +185,13 @@
 
     function discardCurrentState() {
         if (!currentState || !editSnapshot) return;
+        const snapshot = editSnapshot;
 
         if (!currentState.id) {
             states = withStepOrder(states.filter((state) => state.uuid !== currentState?.uuid));
         } else {
             states = states.map((state) =>
-                state.uuid === currentState?.uuid ? cloneState(editSnapshot) : state
+                state.uuid === currentState?.uuid ? cloneState(snapshot) : state
             );
         }
 
@@ -419,6 +428,27 @@
                                     oninput={commitCurrent}
                                 />
                             </section>
+                            {#if canManageTracking}
+                                <section class="grid gap-3 border-t border-(--light-bg3) pt-3">
+                                    <Checkbox
+                                        label="Afficher ce statut dans le suivi client"
+                                        bind:value={currentState.settings.trackingPublic}
+                                        switchMode
+                                        side="left"
+                                        on:change={commitCurrent}
+                                    />
+                                    <Checkbox
+                                        label="Statut final"
+                                        helpText="L'accès au suivi expire après l'arrivée dans ce statut, selon le délai configuré dans les réglages de l'API."
+                                        helpTextIcon
+                                        bind:value={currentState.settings.trackingFinal}
+                                        switchMode
+                                        side="left"
+                                        on:change={commitCurrent}
+                                    />
+                                    <p class="text-xs leading-5 text-(--grey)">Les statuts publics sont transmis au site externe. L'historique commence à l'activation du suivi.</p>
+                                </section>
+                            {/if}
                         </div>
                     </div>
                 {/if}

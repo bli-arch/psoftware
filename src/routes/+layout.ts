@@ -36,12 +36,13 @@ function hasRoutePermission(path: string, user: AuthUser | undefined) {
   if (path.startsWith('/settings/operation')) return can(user, 'settings.operation.modify');
   if (path.startsWith('/settings/server')) return can(user, 'settings.server.modify');
   if (path.startsWith('/settings/team')) return can(user, 'roles.manage');
+  if (path.startsWith('/settings/api')) return can(user, 'tracking.manage');
   if (path.startsWith('/settings/documents')) return Boolean(user?.administrator);
 
   return true;
 }
 
-const deferredV1Routes = ['/settings/notifications', '/settings/product', '/settings/api'];
+const deferredV1Routes = ['/settings/notifications', '/settings/product'];
 
 function isDeferredV1Route(path: string) {
   return deferredV1Routes.some((route) => path === route || path.startsWith(`${route}/`));
